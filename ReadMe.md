@@ -52,7 +52,7 @@ class DemoObserver : LifecycleObserver {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
 
-        lifecycle.addObserver(DemoObserver()) // 옵저버 달아버리기
+        lifecycle.addObserver(DemoObserver()) // 옵저버 달아버리기  // 👈
     }
 ```
 
@@ -87,3 +87,72 @@ DemoObserver: ON_ANY : RESUMED
 ```
 
 ## 생명주기 소유자 정의해보기
+
+```kotlin
+class DemoOwner : LifecycleOwner{
+    private val lifecycleRegistry: LifecycleRegistry
+
+    init {
+        lifecycleRegistry = LifecycleRegistry(this)
+        lifecycle.addObserver(DemoObserver())
+    }
+
+    override fun getLifecycle(): Lifecycle {
+            return lifecycleRegistry
+    }
+
+    fun startOwner() {
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
+    }
+
+    fun stopOwner() {
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
+    }
+}
+```
+
+## 메인 UI에 해당 Owner 클래스 인스턴스 생성한 후 생명주기 이벤트를 발생
+
+- 내부에는 DemoObserver 가 연결되어 있으므로 로그에서 상태 확인 가능
+
+```kotlin
+private lateinit var demoOwner: DemoOwner // 👈
+
+class MainFragment : Fragment() {
+
+    companion object {
+        fun newInstance() = MainFragment()
+    }
+
+    private lateinit var viewModel: MainViewModel
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        return inflater.inflate(R.layout.main_fragment, container, false)
+    }
+
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+        viewModel = ViewModelProvider(this).get(MainViewModel::class.java) // 👈
+
+        demoOwner = DemoOwner() // 👈
+        demoOwner.startOwner() // 👈
+        demoOwner.stopOwner() // 👈
+    }
+
+}
+```
+
+- Log
+```shell
+DemoObserver: ON_CREATE
+DemoObserver: ON_ANY : STARTED
+DemoObserver: ON_START
+DemoObserver: ON_ANY : STARTED
+DemoObserver: ON_STOP
+DemoObserver: ON_ANY : CREATED
+```
+
+- CREATE 상태 변화 생명주기 이벤트는 인스턴스가 최초 생성될 때와 ON_STOP 이벤트가 처리될 때 자동으로 발생.

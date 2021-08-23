@@ -7,7 +7,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.lilcode.example.aaclifecycledemo.DemoObserver
+import com.lilcode.example.aaclifecycledemo.DemoOwner
 import com.lilcode.example.aaclifecycledemo.R
+
+private lateinit var demoOwner: DemoOwner
 
 class MainFragment : Fragment() {
 
@@ -28,7 +31,9 @@ class MainFragment : Fragment() {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
 
-        lifecycle.addObserver(DemoObserver())
+        demoOwner = DemoOwner()
+        demoOwner.startOwner()
+        demoOwner.stopOwner()
     }
 
 }
