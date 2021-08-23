@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.lilcode.example.aaclifecycledemo.DemoObserver
 import com.lilcode.example.aaclifecycledemo.R
 
 class MainFragment : Fragment() {
@@ -26,7 +27,8 @@ class MainFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
-        // TODO: Use the ViewModel
+
+        lifecycle.addObserver(DemoObserver())
     }
 
 }
